@@ -4,6 +4,8 @@ nome para alguma funcionalidade dentro da nossa aplicação */
 import express from 'express';
 import routes from './routes';
 
+import './database';
+
 class App {
   constructor() {
     this.server = express();
