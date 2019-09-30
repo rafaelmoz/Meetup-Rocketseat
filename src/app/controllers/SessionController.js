@@ -1,10 +1,11 @@
 import jwt from 'jsonwebtoken';
 import * as Yup from 'yup';
+
 import User from '../models/User';
 import authConfig from '../../config/auth';
 
 class SessionController {
-  async store(request, response) {
+  async store(req, res) {
     const schema = Yup.object().shape({
       email: Yup.string()
         .email()
@@ -12,24 +13,29 @@ class SessionController {
       password: Yup.string().required(),
     });
 
-    if (!(await schema.isValid(request.body))) {
-      return response.status(400).json({ error: 'Erro na validação' });
+    /* Verifica se o Schema esta correto */
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Erro na validação dos campos!' });
     }
 
-    const { email, password } = request.body;
+    const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
 
+    /* Verifica se o usuário existe, através do endereço de e-mail */
     if (!user) {
-      return response.status(401).json({ error: 'Usuário não encontrado' });
+      return res.status(401).json({ error: 'Usuário não encontrado!' });
     }
 
+    /* Verifica se a senha que foi passada esta correta */
     if (!(await user.checkPassword(password))) {
-      return response.status(401).json({ error: 'Senha não confere' });
+      return res.status(401).json({ error: 'A senha não confere!' });
     }
+
     const { id, name } = user;
 
-    return response.json({
+    /* Se tudo estiver Ok, retorna o token da sessão */
+    return res.json({
       user: {
         id,
         name,
